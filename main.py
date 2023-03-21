@@ -10,7 +10,7 @@ import keyboard
 WIDTH, HEIGHT = 800, 700
 WHITE = (250, 250, 250)
 GRAY = (180, 180, 180)
-BOARD_START_POINT = 75
+BOARD_START_POINT = 125
 # Create a window
 
 WINDOW = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -79,7 +79,14 @@ def main():
         if keyboard.is_pressed("d"):
             lvl.right()
             time.sleep(0.2)
+        if keyboard.is_pressed(" "):
+            lvl.reset()
+            time.sleep(0.2)
         draw_board(lvl)
+        if lvl.check_win():
+            print("You win !")
+            time.sleep(2)
+            break
     pygame.quit()
 
 if __name__ == "__main__":

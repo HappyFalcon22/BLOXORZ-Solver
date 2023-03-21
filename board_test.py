@@ -10,6 +10,7 @@ import time
 # + state_block : indicates the state of the block, consists of : "FALL", "STAND" or "DIVIDED"
 # + state       : the 20x20 board, notations of the tiles are described
 # + goal        : the tile that you need to move the block to, undefined in init
+# + level       : just another copy of the level, to do Reset() function
 
 void_tile = 0
 normal_tile = 1
@@ -22,11 +23,12 @@ finish_tile = 7
 
 class Game():
     def __init__(self, level) -> None:
+        self.level = level
         self.id, self.start, self.state = level
         self.pos = self.start
         self.state_block = "STAND"
         self.goal = self.find_finish_state()
-        print("The goal is at :", self.goal)
+        print("The goal is at :", self.goal, ". Good luck !")
 
     def is_up_legal(self):
         pos = self.if_up()
@@ -282,6 +284,22 @@ class Game():
                 self.right()
             time.sleep(0.5)
         print("Done moving")
+
+    def reset(self):
+        print("Level resetted !")
+        self.id, self.start, self.state = self.level
+        self.pos = self.start
+        self.state_block = "STAND"
+        self.goal = self.find_finish_state()
+        print("The goal is at :", self.goal, ". Good luck !")
+    
+    def check_win(self):
+        if (self.state_block == "STAND" and self.pos == self.goal):
+            return True
+        else:
+            return False
+
     # def swap(self):
     #     pass
 
+print(Game.mro())
