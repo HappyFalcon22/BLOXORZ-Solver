@@ -1,9 +1,14 @@
+
+# Function : load_level(id : int), will read the file "<id>.txt" depicting the board of that level
+# Returns : + id
+#           + start_position : tuple (x, y)
+#           + board          : 2D list of size 20x20
 def load_level(id : int):
     board = [[None for _ in range(20)] for _ in range(20)]
     filename = "Assets/Board/Levels/" + str(id) + ".txt"
     f = open(filename, "r")
     info = f.readline().splitlines()[0].split(" ")
-    id, start_position = int(info[0]), [int(info[1]),int(info[2])]
+    id, start_position = int(info[0]), (int(info[1]),int(info[2]))
     temp = f.readlines()
     for i in range(400):
         board[i // 20][i % 20] = int(temp[i // 20][i % 20])
