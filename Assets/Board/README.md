@@ -10,6 +10,7 @@
 | 6    | Bridge             | 4            |
 | 7    | Soft tile          | 5            |
 | 8    | Division tile      | 6            |
+| 9    | Finish tile        | 7            |
 
 Define the first line : `[level_ID] [start_X] [start_Y]`
 
