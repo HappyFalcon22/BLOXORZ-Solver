@@ -9,10 +9,16 @@ def load_level(id : int):
     f = open(filename, "r")
     info = f.readline().splitlines()[0].split(" ")
     id, start_position = int(info[0]), (int(info[1]),int(info[2]))
+    info = f.readline().splitlines()[0].split(" ")
+    bridge_num = int(info[0])
+    bridge_list = []
+    if bridge_num != 0:
+        for i in range(1,len(info), 3):
+            bridge_list.append((int(info[i]), int(info[i + 1]), info[i + 2]))
     temp = f.readlines()
     for i in range(400):
         board[i // 20][i % 20] = int(temp[i // 20][i % 20])
-    return (id, start_position, board)
+    return (id, start_position, board, bridge_list)
 
 level_1 = load_level(1)
 # level_2 = load_level(2)

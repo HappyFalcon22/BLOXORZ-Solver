@@ -24,11 +24,12 @@ finish_tile = 7
 class Game():
     def __init__(self, level) -> None:
         self.level = level
-        self.id, self.start, self.state = level
+        self.id, self.start, self.state, self.bridge_list = level
         self.pos = self.start
         self.state_block = "STAND"
         self.goal = self.find_finish_state()
         print("The goal is at :", self.goal, ". Good luck !")
+        print(self.bridge_list)
 
     def is_up_legal(self):
         pos = self.if_up()
@@ -302,4 +303,4 @@ class Game():
     # def swap(self):
     #     pass
 
-print(Game.mro())
+lvl = Game(level_1)

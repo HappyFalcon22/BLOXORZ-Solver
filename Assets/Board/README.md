@@ -15,6 +15,6 @@
 Define the first line : `[level_ID] [start_X] [start_Y]`
 
 + `level_ID` : the identifier number of the level
-+ `start_X` : the starting position in X axis
-+ `start_Y` : the starting position in Y axis
++ `start_X` : the starting position in rows
++ `start_Y` : the starting position in columns
 

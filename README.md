@@ -62,3 +62,25 @@ Includes the main class : `Game`
 ## File main.py
 
 The main Python file to draw and animate the game, will annotate later.
+
+## Tile Properties
+
+### 1. Bridge Tile - Soft
+
+Land on the tile to raise or lower the bridge (can land on the tile in any manner, including standing on it or falling on it)
+
+### 2. Bridge Tile - Hard
+
+Must stand on the tile to raise or lower the bridge
+
+### 3. Bridge
+
+Just like the normal tile except that it can be controlled by the Bridge Tile (Soft or Hard)
+
+### 4. Soft Tile
+
+These tile are fragile, can only stand still if the block in the `FALL` state
+
+### 5. Divvy Tile
+
+`STAND` on the tile to divide the block into 2 pieces of $1\times1$, which can be swapped by the key `SPACE`.
