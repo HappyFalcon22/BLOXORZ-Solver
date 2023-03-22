@@ -1,3 +1,4 @@
+import string
 
 # Function : load_level(id : int), will read the file "<id>.txt" depicting the board of that level
 # Returns : + id
@@ -14,20 +15,23 @@ def load_level(id : int):
     bridge_list = []
     if bridge_num != 0:
         for i in range(1,len(info), 3):
-            bridge_list.append((int(info[i]), int(info[i + 1]), info[i + 2]))
+            bridge_list.append((int(info[i]), int(info[i + 1]), info[i + 2], 0))
     temp = f.readlines()
     for i in range(400):
-        board[i // 20][i % 20] = int(temp[i // 20][i % 20])
+        if temp[i // 20][i % 20] not in string.ascii_uppercase:
+            board[i // 20][i % 20] = int(temp[i // 20][i % 20])
+        else:
+            board[i // 20][i % 20] = temp[i // 20][i % 20]
     return (id, start_position, board, bridge_list)
 
-level_1 = load_level(1)
-# level_2 = load_level(2)
-# level_3 = load_level(3)
-# level_4 = load_level(4)
 # level_5 = load_level(5)
 # level_6 = load_level(6)
 # level_7 = load_level(7)
 # level_8 = load_level(8)
+
+level_list = []
+for i in range(1, 5):
+    level_list.append(load_level(i))
 
 """
 print("Level :", id)

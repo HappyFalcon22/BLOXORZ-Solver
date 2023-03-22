@@ -1,5 +1,6 @@
-from read_level import level_1
+from read_level import level_list
 import time
+from string import ascii_uppercase
 
 # Game() class, with attributes :
 # + id          : defined the id of the level
@@ -29,16 +30,34 @@ class Game():
         self.state_block = "STAND"
         self.goal = self.find_finish_state()
         print("The goal is at :", self.goal, ". Good luck !")
-        print(self.bridge_list)
 
     def is_up_legal(self):
         pos = self.if_up()
         if len(pos) == 2:
             if self.state[pos[0]][pos[1]] == 0 : # Void_tile
                 return False
+            if str(self.state[pos[0]][pos[1]]) in ascii_uppercase: # Stand in the bridge
+                # Find where the bridge tiles belong to
+                bridge_id = self.state[pos[0]][pos[1]]
+                for i in self.bridge_list:
+                    if i[2] == bridge_id and i[3] == 0: # Inactive bridge
+                        return False
+            
+            if self.state[pos[0]][pos[1]] == 5: # Stand on a soft tile
+                return False
         if len(pos) == 4: # Fall
             if self.state[pos[0]][pos[1]] == 0 or self.state[pos[2]][pos[3]] == 0:
                 return False
+            if str(self.state[pos[0]][pos[1]]) in ascii_uppercase or str(self.state[pos[2]][pos[3]]) in ascii_uppercase: # Stand in the bridge
+                # Find where the bridge tiles belong to
+                bridge_id_1 = self.state[pos[0]][pos[1]]
+                for i in self.bridge_list:
+                    if i[2] == bridge_id_1 and i[3] == 0: # Inactive bridge
+                        return False
+                bridge_id_2 = self.state[pos[2]][pos[3]]
+                for i in self.bridge_list:
+                    if i[2] == bridge_id_2 and i[3] == 0: # Inactive bridge
+                        return False
         return True
             
 
@@ -47,9 +66,27 @@ class Game():
         if len(pos) == 2:
             if self.state[pos[0]][pos[1]] == 0 : # Void_tile
                 return False
+            if str(self.state[pos[0]][pos[1]]) in ascii_uppercase: # Stand in the bridge
+                # Find where the bridge tiles belong to
+                bridge_id = self.state[pos[0]][pos[1]]
+                for i in self.bridge_list:
+                    if i[2] == bridge_id and i[3] == 0: # Inactive bridge
+                        return False
+            if self.state[pos[0]][pos[1]] == 5: # Stand on a soft tile
+                return False
         if len(pos) == 4: # Fall
             if self.state[pos[0]][pos[1]] == 0 or self.state[pos[2]][pos[3]] == 0:
                 return False
+            if str(self.state[pos[0]][pos[1]]) in ascii_uppercase or str(self.state[pos[2]][pos[3]]) in ascii_uppercase: # Stand in the bridge
+                # Find where the bridge tiles belong to
+                bridge_id_1 = self.state[pos[0]][pos[1]]
+                for i in self.bridge_list:
+                    if i[2] == bridge_id_1 and i[3] == 0: # Inactive bridge
+                        return False
+                bridge_id_2 = self.state[pos[2]][pos[3]]
+                for i in self.bridge_list:
+                    if i[2] == bridge_id_2 and i[3] == 0: # Inactive bridge
+                        return False
         return True
     
     def is_left_legal(self):
@@ -57,9 +94,27 @@ class Game():
         if len(pos) == 2:
             if self.state[pos[0]][pos[1]] == 0 : # Void_tile
                 return False
+            if str(self.state[pos[0]][pos[1]]) in ascii_uppercase: # Stand in the bridge
+                # Find where the bridge tiles belong to
+                bridge_id = self.state[pos[0]][pos[1]]
+                for i in self.bridge_list:
+                    if i[2] == bridge_id and i[3] == 0: # Inactive bridge
+                        return False
+            if self.state[pos[0]][pos[1]] == 5: # Stand on a soft tile
+                return False
         if len(pos) == 4: # Fall
             if self.state[pos[0]][pos[1]] == 0 or self.state[pos[2]][pos[3]] == 0:
                 return False
+            if str(self.state[pos[0]][pos[1]]) in ascii_uppercase or str(self.state[pos[2]][pos[3]]) in ascii_uppercase: # Stand in the bridge
+                # Find where the bridge tiles belong to
+                bridge_id_1 = self.state[pos[0]][pos[1]]
+                for i in self.bridge_list:
+                    if i[2] == bridge_id_1 and i[3] == 0: # Inactive bridge
+                        return False
+                bridge_id_2 = self.state[pos[2]][pos[3]]
+                for i in self.bridge_list:
+                    if i[2] == bridge_id_2 and i[3] == 0: # Inactive bridge
+                        return False
         return True
         
     def is_right_legal(self):
@@ -67,9 +122,27 @@ class Game():
         if len(pos) == 2:
             if self.state[pos[0]][pos[1]] == 0 : # Void_tile
                 return False
+            if str(self.state[pos[0]][pos[1]]) in ascii_uppercase: # Stand in the bridge
+                # Find where the bridge tiles belong to
+                bridge_id = self.state[pos[0]][pos[1]]
+                for i in self.bridge_list:
+                    if i[2] == bridge_id and i[3] == 0: # Inactive bridge
+                        return False
+            if self.state[pos[0]][pos[1]] == 5: # Stand on a soft tile
+                return False
         if len(pos) == 4: # Fall
             if self.state[pos[0]][pos[1]] == 0 or self.state[pos[2]][pos[3]] == 0:
                 return False
+            if str(self.state[pos[0]][pos[1]]) in ascii_uppercase or str(self.state[pos[2]][pos[3]]) in ascii_uppercase: # Stand in the bridge
+                # Find where the bridge tiles belong to
+                bridge_id_1 = self.state[pos[0]][pos[1]]
+                for i in self.bridge_list:
+                    if i[2] == bridge_id_1 and i[3] == 0: # Inactive bridge
+                        return False
+                bridge_id_2 = self.state[pos[2]][pos[3]]
+                for i in self.bridge_list:
+                    if i[2] == bridge_id_2 and i[3] == 0: # Inactive bridge
+                        return False
         return True
 
     def list_legal_moves(self):
@@ -88,7 +161,39 @@ class Game():
         for i in range(400):
             if self.state[i // 20][i % 20] == 7:
                 return (i // 20, i % 20)
-
+    
+    # Method : step_on_special_tiles() : executes actions if the block is standing on some special tiles
+    def step_on_special_tiles(self):
+        # Traverse the list of bridge tiles
+        for i in range (len(self.bridge_list)):
+            x, y = self.bridge_list[i][0], self.bridge_list[i][1]
+            # Check if the bridge tile is soft 
+            if self.state[x][y] == 2:
+                # Just one part of the block standing on it is enough
+                if self.state_block == "STAND" and self.pos[0] == x and self.pos[1] == y:
+                    temp = list(self.bridge_list[i])
+                    if temp[3] == 0:
+                        temp[3] = 1
+                        self.bridge_list[i] = tuple(temp)
+                    else:
+                        temp[3] = 0
+                        self.bridge_list[i] = tuple(temp)
+                if self.state_block == "FALL":
+                    if (self.pos[0] == x and self.pos[1] == y) or (self.pos[2] == x and self.pos[3] == y):
+                        temp = list(self.bridge_list[i])
+                        if temp[3] == 0:
+                            temp[3] = 1
+                            self.bridge_list[i] = tuple(temp)
+                        else:
+                            temp[3] = 0
+                            self.bridge_list[i] = tuple(temp)
+            # Check if the bridge tile is hard
+            if self.state[x][y] == 3:
+                # The block must stand on the tile
+                if self.state_block == "STAND" and (self.pos[0] == x and self.pos[1] == y):
+                    temp = list(self.bridge_list[i])
+                    temp[3] = 1
+                    self.bridge_list[i] = tuple(temp)
     # Method : show_state(), displays the state as the board, tile descriptions are described
     def show_state(self):
         for i in range(20):
@@ -120,6 +225,7 @@ class Game():
                     else:
                         self.pos = (x1 - 2, y1)
                     self.state_block = "STAND"
+            self.step_on_special_tiles()
         else:
             print("That move is illegal")
 
@@ -163,6 +269,7 @@ class Game():
                     else:
                         self.pos = (x1 + 2, y1)
                     self.state_block = "STAND"
+            self.step_on_special_tiles()
         else:
             print("That move is illegal")
     
@@ -206,6 +313,7 @@ class Game():
                     else:
                         self.pos = (x1, y1 - 2)
                     self.state_block = "STAND"
+            self.step_on_special_tiles()
         else:
             print("That move is illegal")
     
@@ -249,6 +357,7 @@ class Game():
                     else:
                         self.pos = (x1, y1 + 2)
                     self.state_block = "STAND"
+            self.step_on_special_tiles()
         else:
             print("That move is illegal")
 
@@ -303,4 +412,3 @@ class Game():
     # def swap(self):
     #     pass
 
-lvl = Game(level_1)

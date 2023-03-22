@@ -1,10 +1,12 @@
 import pygame
 import os
-from read_level import level_1
-from Images import VOID_TILE, NORMAL_TILE, FINISH_TILE, BLOCK
+import sys
+from read_level import level_list
+from Images import *
 import time
 from board_test import Game
 import keyboard
+import string
 
 # Set parameters
 WIDTH, HEIGHT = 800, 700
@@ -22,7 +24,7 @@ void_tile = 0
 normal_tile = 1
 bridge_tile_soft = 2
 bridge_tile_hard = 3
-bridge = 4
+# bridge = 4
 soft_tile = 5
 division_tile = 6
 finish_tile = 7
@@ -39,6 +41,18 @@ def draw_board(game : Game):
                 pass
             elif tile == 1: # Normal tile
                 WINDOW.blit(NORMAL_TILE, position)
+            elif tile == 2: # Bridge Tile - Soft
+                WINDOW.blit(BRIDGE_TILE_SOFT, position)
+            elif tile == 3: # Bridge Tile - Hard
+                WINDOW.blit(BRIDGE_TILE_HARD, position)
+            elif str(tile) in string.ascii_uppercase: # Bridge
+                for k in game.bridge_list:
+                    if k[2] == tile and k[3] == 0: # Inactive bridge
+                        WINDOW.blit(VOID_TILE, position)
+                    if k[2] == tile and k[3] == 1: # Active bridge
+                        WINDOW.blit(BRIDGE, position)  
+            elif tile == 5: # Soft tile
+                WINDOW.blit(SOFT_TILE, position)    
             elif tile == 7: # Finish tile
                 WINDOW.blit(FINISH_TILE, position)
     # Draw the block 
@@ -58,9 +72,10 @@ def draw_window():
     pygame.display.update()
 
 def main():
+    level = int(sys.argv[1])
     clock = pygame.time.Clock()
     run = True
-    lvl = Game(level_1)
+    lvl = Game(level_list[level - 1])
     draw_window()
     while(run):
         clock.tick(FPS)
