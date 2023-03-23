@@ -413,19 +413,22 @@ class Game():
     # def swap(self):
     #     pass
 
-
-    
-class aStar(Game):
-    def __init__(self, level, move="") -> None:
+#Search using BFS 
+class BFS(Game):
+    def __init__(self,level,move="") -> None:
         self.level = level
         self.id, self.start, self.state, self.bridge_list = level
         self.pos = self.start
         self.state_block = "STAND"
         self.goal = self.find_finish_state()
-        self.f = self.heuristic_func()
         self.g = 0
         self.move = move
 
+    #-----------------------
+    #   Redefine 4 method: left,right,up,down
+    #   In class game : only change pos of block
+    #   Here : no need checking legal, return block itself
+    #-----------------------
     # Method : left(), move the block to the left : <--
     def left(self):
         if self.state_block == "STAND":  # The block is standing
@@ -514,7 +517,89 @@ class aStar(Game):
                 self.state_block = "STAND"
         return self
 
-    # Chebyshev distance for calculating h(n)
+    # These 2 find method: search for block position in open_list and close_list
+    # return index if found, None otherwise
+    def find_in_open(self,open_list):
+        for index,item in enumerate(open_list):
+            if item.pos == self.pos:
+                return index
+        return None
+    def find_in_close(self,close_list):
+        for index,item in enumerate(close_list):
+            if item.pos == self.pos:
+                return index
+        return None
+
+    # Method used to solve problem using BFS
+    # return a string of movement
+    def solve(self):
+        # Create 2 list for unvisited and visited node
+        open_list = []
+        close_list = []
+        # First add start node
+        open_list.append(self)
+
+        while len(open_list) != 0:
+            # Take the first node in unvisited list
+            # Visit it and add to visited list
+            currCell = open_list[0]
+            open_list.pop(0)
+            close_list.append(currCell)
+
+            # Check winning condition
+            if currCell.check_win():
+                return currCell.move
+            
+            # List all legal move
+            legal_move = currCell.list_legal_moves()
+            for m in legal_move:
+                if m == "D":
+                    #have to copy currcell to nextmove, to avoid currcell change after call right() func
+                    nextMove = copy.deepcopy(currCell)
+                    nextMove = nextMove.right()
+                    nextMove.g = currCell.g + 1
+                    nextMove.move = currCell.move + "D"
+                if m == "S":
+                    nextMove = copy.deepcopy(currCell)
+                    nextMove = nextMove.down()
+                    nextMove.g = currCell.g + 1
+                    nextMove.move = currCell.move + "S"
+                if m == "A":
+                    nextMove = copy.deepcopy(currCell)
+                    nextMove = nextMove.left()
+                    nextMove.g = currCell.g + 1
+                    nextMove.move = currCell.move + "A"
+                if m == "W":
+                    nextMove = copy.deepcopy(currCell)
+                    nextMove = nextMove.up()
+                    nextMove.g = currCell.g + 1
+                    nextMove.move = currCell.move + "W"
+                # For each legal move, consider its position
+                open_idx = nextMove.find_in_open(open_list)
+                close_idx = nextMove.find_in_close(close_list)
+                # Node is not exist in both list -> add to unvisited list
+                if open_idx == None and close_idx == None:
+                    open_list.append(nextMove)
+                # Node is already exist in unvisited list and its cost is larger -> replace node
+                elif open_idx != None and open_list[open_idx].g > nextMove.g:
+                    open_list[open_idx] = nextMove
+        return None
+
+
+
+# Search using A*
+class aStar(BFS):
+    def __init__(self, level, move="") -> None:
+        self.level = level
+        self.id, self.start, self.state, self.bridge_list = level
+        self.pos = self.start
+        self.state_block = "STAND"
+        self.goal = self.find_finish_state()
+        self.f = self.heuristic_func()
+        self.g = 0
+        self.move = move
+
+    # Heuristic function: Chebyshev
     def heuristic_func(self):
         x1_dis = abs(self.pos[0] - self.goal[0])
         y1_dis = abs(self.pos[1] - self.goal[1])
@@ -527,24 +612,16 @@ class aStar(Game):
             y2_dis = abs(self.pos[3] - self.goal[1])
             return max(max(x1_dis, y1_dis), max(x2_dis, y2_dis))
 
-    def find_in_open(self,open_list):
-        for index,item in enumerate(open_list):
-            if item.pos == self.pos:
-                return index
-        return None
-    def find_in_close(self,close_list):
-        for index,item in enumerate(close_list):
-            if item.pos == self.pos:
-                return index
-        return None
-    
+    # Method used to solve problem using A*
+    # return a string of movement
     def solve(self):
         open_list = []
         close_list = []
-
         open_list.append(self)
 
         while len(open_list) != 0:
+            # In A*, the node in unvisited list is visited in increasing order
+            # Node with the smallest cost f = g + h, is pop out first
             currCell = open_list[0]
             currIdx = 0
             for index,item in enumerate(open_list):
@@ -554,9 +631,11 @@ class aStar(Game):
             open_list.pop(currIdx)
             close_list.append(currCell)
 
+            # Check winning condition
             if currCell.check_win():
                 return currCell.move
             
+            # List all legal move
             legal_move = currCell.list_legal_moves()
             for m in legal_move:
                 if m == "D":
@@ -585,13 +664,17 @@ class aStar(Game):
                     nextMove.f = nextMove.g + nextMove.heuristic_func()
                     nextMove.move = currCell.move + "W"
                 
-                #search for nextMove in openlist and closelist
+                # For each legal move, consider its position
                 open_idx = nextMove.find_in_open(open_list)
                 close_idx = nextMove.find_in_close(close_list)
+                # Node is not exist in both list -> add to unvisited list
                 if open_idx == None and close_idx == None:
                     open_list.append(nextMove)
+                # Node existed in unvisited list and its cost is larger -> replace node
                 elif open_idx != None and open_list[open_idx].f > nextMove.f:
                     open_list[open_idx] = nextMove
+                # Node existed in close list and its cost is larger -> add to open_list, remove from close_list
                 elif close_idx != None and close_list[close_idx].f > nextMove.f:
                     open_list.append(nextMove)
                     close_list.pop(close_idx)
+        return None
