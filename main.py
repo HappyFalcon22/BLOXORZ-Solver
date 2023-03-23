@@ -137,6 +137,38 @@ def main():
                 print("AI failed")
                 time.sleep(2)
                 break
+    if mode == "bfs":
+        solver = BFS(level_list[level - 1])
+        result = solver.solve()
+        draw_board(solver)
+        time.sleep(3)
+        while(run):
+            clock.tick(FPS)
+            for event in pygame.event.get():
+                if (event.type == pygame.QUIT):
+                    run = False
+            for move in result:
+                if move == "W":
+                    solver.up()
+                    time.sleep(1)
+                if move == "S":
+                    solver.down()
+                    time.sleep(1)
+                if move == "A":
+                    solver.left()
+                    time.sleep(1)
+                if move == "D":
+                    solver.right()
+                    time.sleep(1)
+                draw_board(solver)
+            if solver.check_win():
+                print("You win")
+                time.sleep(2)
+                break
+            else:
+                print("AI failed")
+                time.sleep(2)
+                break
     pygame.quit()
 
 # def main():

@@ -585,10 +585,8 @@ class BFS(Game):
                     open_list[open_idx] = nextMove
         return None
 
-
-
 # Search using A*
-class aStar(BFS):
+class aStar():
     def __init__(self, level, move="") -> None:
         self.level = level
         self.id, self.start, self.state, self.bridge_list = level
