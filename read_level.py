@@ -30,13 +30,12 @@ def load_level(id : int):
 # level_8 = load_level(8)
 
 level_list = []
-for i in range(1, 5):
+for i in range(1, 4):
     level_list.append(load_level(i))
 
-"""
+
 print("Level :", id)
 print("Starting position :", start)
 print("Board :")
 for i in range(len(board[0])):
     print(board[i])
-"""

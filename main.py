@@ -104,5 +104,14 @@ def main():
             break
     pygame.quit()
 
+# def main():
+#     lvl = aStar(level_1)
+#     result = lvl.solve()
+#     print(result)
+#     lvl.move_in_order(result)
+#     if lvl.check_win():
+#         print("You win")
+
+
 if __name__ == "__main__":
     main()
