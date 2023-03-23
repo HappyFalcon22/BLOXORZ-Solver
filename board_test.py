@@ -148,14 +148,14 @@ class Game():
 
     def list_legal_moves(self):
         legal_moves = []
-        if self.is_up_legal():
-            legal_moves.append("W")
-        if self.is_down_legal():
-            legal_moves.append("S")
-        if self.is_left_legal():
-            legal_moves.append("A")
         if self.is_right_legal():
             legal_moves.append("D")
+        if self.is_down_legal():
+            legal_moves.append("S")
+        if self.is_up_legal():
+            legal_moves.append("W")
+        if self.is_left_legal():
+            legal_moves.append("A")
         return legal_moves
     
     def find_finish_state(self):
