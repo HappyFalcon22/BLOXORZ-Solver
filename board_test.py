@@ -1,6 +1,7 @@
 from read_level import level_list
 import time
 from string import ascii_uppercase
+import copy
 
 # Game() class, with attributes :
 # + id          : defined the id of the level
@@ -412,3 +413,185 @@ class Game():
     # def swap(self):
     #     pass
 
+
+    
+class aStar(Game):
+    def __init__(self, level, move="") -> None:
+        self.level = level
+        self.id, self.start, self.state = level
+        self.pos = self.start
+        self.state_block = "STAND"
+        self.goal = self.find_finish_state()
+        self.f = self.heuristic_func()
+        self.g = 0
+        self.move = move
+
+    # Method : left(), move the block to the left : <--
+    def left(self):
+        if self.state_block == "STAND":  # The block is standing
+            # Look at 2 tiles on the left of it
+            x, y = self.pos[0], self.pos[1]
+            self.pos = (x, y - 1, x, y - 2)
+            self.state_block = "FALL"
+        elif self.state_block == "FALL":
+            # Fall, up will remain the state fall
+            x1, y1, x2, y2 = self.pos[0], self.pos[1], self.pos[2], self.pos[3]
+            if y1 == y2:
+                y1 -= 1
+                y2 -= 1
+                self.pos = (x1, y1, x2, y2)
+            else:  # Fall, up will make the block stand
+                if y1 - 1 == y2 - 2:
+                    self.pos = (x1, y1 - 1)
+                else:
+                    self.pos = (x1, y1 - 2)
+                self.state_block = "STAND"
+        return self
+
+    # Method : right(), move the block to the right : -->
+    def right(self):
+        if self.state_block == "STAND":  # The block is standing
+            # Look at 2 tiles on the right of it
+            x, y = self.pos[0], self.pos[1]
+            self.pos = (x, y + 1, x, y + 2)
+            self.state_block = "FALL"
+        elif self.state_block == "FALL":
+            # Fall, up will remain the state fall
+            x1, y1, x2, y2 = self.pos[0], self.pos[1], self.pos[2], self.pos[3]
+            if y1 == y2:
+                y1 += 1
+                y2 += 1
+                self.pos = (x1, y1, x2, y2)
+            else:  # Fall, up will make the block stand
+                if y1 + 1 == y2 + 2:
+                    self.pos = (x1, y1 + 1)
+                else:
+                    self.pos = (x1, y1 + 2)
+                self.state_block = "STAND"
+        return self
+
+    # Method : down(), move the block down
+    def down(self):
+        if self.state_block == "STAND":  # The block is standing
+            # Look at 2 tiles below it
+            x, y = self.pos[0], self.pos[1]
+            self.pos = (x + 1, y, x + 2, y)
+            self.state_block = "FALL"
+        elif self.state_block == "FALL":
+            # Fall, up will remain the state fall
+            x1, y1, x2, y2 = self.pos[0], self.pos[1], self.pos[2], self.pos[3]
+            if x1 == x2:
+                x1 += 1
+                x2 += 1
+                self.pos = (x1, y1, x2, y2)
+            else:  # Fall, up will make the block stand
+                if x1 + 1 == x2 + 2:
+                    self.pos = (x1 + 1, y1)
+                else:
+                    self.pos = (x1 + 2, y1)
+                self.state_block = "STAND"
+        return self
+
+    # Method : up(), move the block up
+    def up(self):
+        if self.state_block == "STAND":  # The block is standing
+            # Look at 2 tiles above it
+            x, y = self.pos[0], self.pos[1]
+            self.pos = (x - 1, y, x - 2, y)
+            self.state_block = "FALL"
+        elif self.state_block == "FALL":
+            # Fall, up will remain the state fall
+            x1, y1, x2, y2 = self.pos[0], self.pos[1], self.pos[2], self.pos[3]
+            if x1 == x2:
+                x1 -= 1
+                x2 -= 1
+                self.pos = (x1, y1, x2, y2)
+            else:  # Fall, up will make the block stand
+                if x1 - 1 == x2 - 2:
+                    self.pos = (x1 - 1, y1)
+                else:
+                    self.pos = (x1 - 2, y1)
+                self.state_block = "STAND"
+        return self
+
+    # Chebyshev distance for calculating h(n)
+    def heuristic_func(self):
+        x1_dis = abs(self.pos[0] - self.goal[0])
+        y1_dis = abs(self.pos[1] - self.goal[1])
+        if (len(self.pos) == 2):
+            # Standing state
+            return max(x1_dis, y1_dis)
+        else:
+            # Lying state, calculate more distance
+            x2_dis = abs(self.pos[2] - self.goal[0])
+            y2_dis = abs(self.pos[3] - self.goal[1])
+            return max(max(x1_dis, y1_dis), max(x2_dis, y2_dis))
+
+    def find_in_open(self,open_list):
+        for index,item in enumerate(open_list):
+            if item.pos == self.pos:
+                return index
+        return None
+    def find_in_close(self,close_list):
+        for index,item in enumerate(close_list):
+            if item.pos == self.pos:
+                return index
+        return None
+    
+    def solve(self):
+        open_list = []
+        close_list = []
+
+        open_list.append(self)
+
+        while len(open_list) != 0:
+            currCell = open_list[0]
+            currIdx = 0
+            for index,item in enumerate(open_list):
+                if item.f < currCell.f:
+                    currIdx = index
+                    currCell = item
+            open_list.pop(currIdx)
+            close_list.append(currCell)
+
+            if currCell.check_win():
+                return currCell.move
+            
+            legal_move = currCell.list_legal_moves()
+            for m in legal_move:
+                if m == "D":
+                    #have to copy currcell to nextmove, to avoid currcell change after call right() func
+                    nextMove = copy.deepcopy(currCell)
+                    nextMove = nextMove.right()
+                    nextMove.g = currCell.g + 1
+                    nextMove.f = nextMove.g + nextMove.heuristic_func()
+                    nextMove.move = currCell.move + "D"
+                if m == "S":
+                    nextMove = copy.deepcopy(currCell)
+                    nextMove = nextMove.down()
+                    nextMove.g = currCell.g + 1
+                    nextMove.f = nextMove.g + nextMove.heuristic_func()
+                    nextMove.move = currCell.move + "S"
+                if m == "A":
+                    nextMove = copy.deepcopy(currCell)
+                    nextMove = nextMove.left()
+                    nextMove.g = currCell.g + 1
+                    nextMove.f = nextMove.g + nextMove.heuristic_func()
+                    nextMove.move = currCell.move + "A"
+                if m == "W":
+                    nextMove = copy.deepcopy(currCell)
+                    nextMove = nextMove.up()
+                    nextMove.g = currCell.g + 1
+                    nextMove.f = nextMove.g + nextMove.heuristic_func()
+                    nextMove.move = currCell.move + "W"
+                
+                #search for nextMove in openlist and closelist
+                open_idx = nextMove.find_in_open(open_list)
+                close_idx = nextMove.find_in_close(close_list)
+                if open_idx == None and close_idx == None:
+                    open_list.append(nextMove)
+                elif open_idx != None and open_list[open_idx].f > nextMove.f:
+                    open_list[open_idx] = nextMove
+                elif close_idx != None and close_list[close_idx].f > nextMove.f:
+                    open_list.append(nextMove)
+                    close_list.pop(close_idx)
