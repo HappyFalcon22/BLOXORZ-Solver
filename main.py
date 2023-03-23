@@ -4,7 +4,7 @@ import sys
 from read_level import level_list
 from Images import *
 import time
-from board_test import Game
+from board_test import *
 import keyboard
 import string
 
@@ -73,39 +73,72 @@ def draw_window():
 
 def main():
     level = int(sys.argv[1])
+    mode = str(sys.argv[2])
     clock = pygame.time.Clock()
     run = True
     lvl = Game(level_list[level - 1])
     draw_window()
-    while(run):
-        clock.tick(FPS)
-        for event in pygame.event.get():
-            if (event.type == pygame.QUIT):
-                run = False
-        if keyboard.is_pressed("w"):
-            lvl.up()
-            time.sleep(0.2)
-        if keyboard.is_pressed("s"):
-            lvl.down()
-            time.sleep(0.2)
-        if keyboard.is_pressed("a"):
-            lvl.left()
-            time.sleep(0.2)
-        if keyboard.is_pressed("d"):
-            lvl.right()
-            time.sleep(0.2)
-        if keyboard.is_pressed(" "):
-            lvl.reset()
-            time.sleep(0.2)
-        draw_board(lvl)
-        if lvl.check_win():
-            print("You win !")
-            time.sleep(2)
-            break
+    if mode == "manual":
+        while(run):
+            clock.tick(FPS)
+            for event in pygame.event.get():
+                if (event.type == pygame.QUIT):
+                    run = False
+            if keyboard.is_pressed("w"):
+                lvl.up()
+                time.sleep(0.2)
+            if keyboard.is_pressed("s"):
+                lvl.down()
+                time.sleep(0.2)
+            if keyboard.is_pressed("a"):
+                lvl.left()
+                time.sleep(0.2)
+            if keyboard.is_pressed("d"):
+                lvl.right()
+                time.sleep(0.2)
+            if keyboard.is_pressed(" "):
+                lvl.reset()
+                time.sleep(0.2)
+            draw_board(lvl)
+            if lvl.check_win():
+                print("You win !")
+                time.sleep(2)
+                break
+
+    if mode == "astar":
+        solver = aStar(level_list[level - 1])
+        result = solver.solve()
+        while(run):
+            clock.tick(FPS)
+            for event in pygame.event.get():
+                if (event.type == pygame.QUIT):
+                    run = False
+            for move in result:
+                if move == "W":
+                    solver.up()
+                    time.sleep(1)
+                if move == "S":
+                    solver.down()
+                    time.sleep(1)
+                if move == "A":
+                    solver.left()
+                    time.sleep(1)
+                if move == "D":
+                    solver.right()
+                    time.sleep(1)
+                draw_board(solver)
+            if solver.check_win():
+                print("You win")
+                time.sleep(2)
+                break
+            else:
+                print("AI failed")
+                time.sleep(2)
+                break
     pygame.quit()
 
 # def main():
-#     lvl = aStar(level_1)
+#     lvl = aStar(level_list[0])
 #     result = lvl.solve()
 #     print(result)
 #     lvl.move_in_order(result)

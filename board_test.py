@@ -418,7 +418,7 @@ class Game():
 class aStar(Game):
     def __init__(self, level, move="") -> None:
         self.level = level
-        self.id, self.start, self.state = level
+        self.id, self.start, self.state, self.bridge_list = level
         self.pos = self.start
         self.state_block = "STAND"
         self.goal = self.find_finish_state()
