@@ -108,6 +108,8 @@ def main():
     if mode == "astar":
         solver = aStar(level_list[level - 1])
         result = solver.solve()
+        draw_board(solver)
+        time.sleep(3)
         while(run):
             clock.tick(FPS)
             for event in pygame.event.get():
