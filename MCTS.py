@@ -9,6 +9,7 @@ class MCTS(Game):
         self.parent = None
         self.visited = 0
         self.reward = 0
+        self.possible_action = self.get_neighbor()
 
     # Base on Euclidian distance
     def cal_reward(self):  # ->>>>get reward
@@ -45,18 +46,19 @@ class MCTS(Game):
             result.append(nextMove)
         return result
 
-    def backup(self, reward):
+    def backup(self):
         while self is not None:
-            self.reward += reward
+            self.reward += self.cal_reward()
             self.visited += 1
             self = self.parent
+
     def add_child(self,child):
         self.childen.append(child)
 
     def best_neighbor(self, exploration_param = 1.4):
         best_neighbor = None
         best_score = -float("inf")
-        for node in self.get_neighbor():
+        for node in self.childen():
             exploitation_score = node.reward/node.visited
             exploration_score = exploration_param * math.sqrt(math.log(self.visited)/node.visited)
             total_score =  exploitation_score + exploration_score
@@ -66,15 +68,43 @@ class MCTS(Game):
         return best_neighbor
     
     def default_policy(self):
-        while not self.check_win():
-            legal_move = self.get_neighbor()
-            if len(legal_move) > 0:
-                n = random.randint(0,len(legal_move)-1)
-                nextMove = legal_move[n]
-                
-            
-    
+        node = copy.deepcopy(self)
+        while not node.check_win() and len(node.possible_action) > 0:
+            if len(node.possible_action) > 0:
+                n = random.randint(0,len(self.possible_action)-1)
+                node = node.possible_action[n]
+        return node.cal_reward()
 
+    def select_untried_action(self):
+        while not self.check_win():
+            untried = list(set(self.possible_action) - set(self.childen))
+            if len(untried) > 0:
+                return untried[0]
+            else:
+                return None
+        return None   
+    def tree_policy(self):
+        while not self.check_win():
+            node = self.select_untried_action()
+            if node is not None:
+                self.childen.append(node)
+                return node
+            else:
+                node = self.best_neighbor()
+        return self            
+    def MCTS(self):
+        for i in range(5):
+            node = self.tree_policy()
+            reward = self.default_policy()
+            self.backup()
+        return self.best_neighbor()
+    def solve(self):
+        finish = self.MCTS()
+        result = []
+        while finish.parent is not None:
+            result.append(finish.pos)
+            finish = finish.parent
+        return result
 # function monte_carlo_tree_search(initial_state):
 #     root_node = Node(state=initial_state)
 #     while not stop_condition_met():
