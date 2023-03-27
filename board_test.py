@@ -195,8 +195,12 @@ class Game():
                 # The block must stand on the tile
                 if self.state_block == "STAND" and (self.pos[0] == x and self.pos[1] == y):
                     temp = list(self.bridge_list[i])
-                    temp[3] = 1
-                    self.bridge_list[i] = tuple(temp)
+                    if temp[3] == 0:
+                        temp[3] = 1
+                        self.bridge_list[i] = tuple(temp)
+                    else:
+                        temp[3] = 0
+                        self.bridge_list[i] = tuple(temp)
     # Method : show_state(), displays the state as the board, tile descriptions are described
     def show_state(self):
         for i in range(20):

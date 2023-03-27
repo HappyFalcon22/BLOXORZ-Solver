@@ -1,7 +1,7 @@
 import pygame
 import os
 import sys
-from read_level import level_list
+from read_level import *
 from Images import *
 import time
 from board_test import *
@@ -77,7 +77,7 @@ def main():
     mode = str(sys.argv[2])
     clock = pygame.time.Clock()
     run = True
-    lvl = Game(level_list[level - 1])
+    lvl = Game(level_list[level_idx.index(level)])
     draw_window()
     if mode == "manual":
         while(run):
@@ -107,7 +107,7 @@ def main():
                 break
 
     if mode == "astar":
-        solver = aStar(level_list[level - 1])
+        solver = aStar(level_list[level_idx.index(level)])
         start_time = time.time()
         tracemalloc.start()
         result = solver.solve()
@@ -117,6 +117,9 @@ def main():
         print("Found a solution in", runtime, "secs")
         print("Maximum memory allocation :", max_mem)
         draw_board(solver)
+        f = open("Assets/Board/Solutions/Astar/" + str(level) + ".txt", "w")
+        f.write(result)
+        f.close()
         time.sleep(3)
         while(run):
             clock.tick(FPS)
@@ -126,16 +129,16 @@ def main():
             for move in result:
                 if move == "W":
                     solver.up()
-                    time.sleep(1)
+                    time.sleep(0.6)
                 if move == "S":
                     solver.down()
-                    time.sleep(1)
+                    time.sleep(0.6)
                 if move == "A":
                     solver.left()
-                    time.sleep(1)
+                    time.sleep(0.6)
                 if move == "D":
                     solver.right()
-                    time.sleep(1)
+                    time.sleep(0.6)
                 draw_board(solver)
             if solver.check_win():
                 print("You win")
@@ -146,7 +149,7 @@ def main():
                 time.sleep(2)
                 break
     if mode == "bfs":
-        solver = BFS(level_list[level - 1])
+        solver = BFS(level_list[level_idx.index(level)])
         start_time = time.time()
         tracemalloc.start()
         result = solver.solve()
@@ -155,6 +158,9 @@ def main():
         tracemalloc.stop()
         print("Found a solution in", runtime, "secs")
         print("Maximum memory allocation :", max_mem)
+        f = open("Assets/Board/Solutions/BFS/" + str(level) + ".txt", "w")
+        f.write(result)
+        f.close()
         draw_board(solver)
         time.sleep(3)
         while(run):
@@ -165,16 +171,16 @@ def main():
             for move in result:
                 if move == "W":
                     solver.up()
-                    time.sleep(1)
+                    time.sleep(0.6)
                 if move == "S":
                     solver.down()
-                    time.sleep(1)
+                    time.sleep(0.6)
                 if move == "A":
                     solver.left()
-                    time.sleep(1)
+                    time.sleep(0.6)
                 if move == "D":
                     solver.right()
-                    time.sleep(1)
+                    time.sleep(0.6)
                 draw_board(solver)
             if solver.check_win():
                 print("You win")
@@ -186,7 +192,7 @@ def main():
                 break
 
     if mode == "mcts":
-        solver = MCTS(level_list[level - 1])
+        solver = MCTS(level_list[level_idx.index(level)])
         start_time = time.time()
         tracemalloc.start()
         result = solver.solve()
@@ -195,6 +201,9 @@ def main():
         tracemalloc.stop()
         print("Found a solution in", runtime, "secs")
         print("Maximum memory allocation :", max_mem)
+        f = open("Assets/Board/Solutions/MCTS/" + str(level) + ".txt", "w")
+        f.write(result)
+        f.close()
         draw_board(solver)
         time.sleep(3)
         while(run):
@@ -205,16 +214,16 @@ def main():
             for move in result:
                 if move == "W":
                     solver.up()
-                    time.sleep(1)
+                    time.sleep(0.6)
                 if move == "S":
                     solver.down()
-                    time.sleep(1)
+                    time.sleep(0.6)
                 if move == "A":
                     solver.left()
-                    time.sleep(1)
+                    time.sleep(0.6)
                 if move == "D":
                     solver.right()
-                    time.sleep(1)
+                    time.sleep(0.6)
                 draw_board(solver)
             if solver.check_win():
                 print("You win")
