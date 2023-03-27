@@ -2,6 +2,8 @@ from read_level import level_list
 import time
 from string import ascii_uppercase
 import copy
+import math
+import random
 
 # Game() class, with attributes :
 # + id          : defined the id of the level
@@ -760,3 +762,111 @@ class aStar(BFS):
                         close_list.pop(close_idx)
                         continue
         return None
+
+class MCTS(Game):
+    def __init__(self, level) -> None:
+        super().__init__(level)
+        self.childen = []
+        self.parent = None
+        self.visited = 0
+        self.reward = 0
+        self.possible_action = self.get_neighbor()
+
+    # Base on Euclidian distance
+    def cal_reward(self):  # ->>>>get reward
+        if self.check_win():
+            return 20
+        x_goal, y_goal = self.goal
+        x1, y1 = [self.pos[0], self.pos[1]]
+        if len(self.pos) == 2:
+            return 20 - math.sqrt((x1-x_goal)**2 + (y1-y_goal)**2)
+        if len(self.pos) == 4:
+            x2, y2 = [self.pos[2], self.pos[3]]
+            dis1 = math.sqrt((x1-x_goal)**2 + (y1-y_goal)**2)
+            dis2 = math.sqrt((x2-x_goal)**2 + (y2-y_goal)**2)
+            return 20 - 0.5*(dis1+dis2)
+
+    # Expand all legal move from a node
+    def get_neighbor(self):
+        result = []
+        legal_move = self.list_legal_moves()
+        for m in legal_move:
+            if m == "D":
+                nextMove = copy.deepcopy(self)
+                nextMove = nextMove.right()
+            if m == "S":
+                nextMove = copy.deepcopy(self)
+                nextMove = nextMove.down()
+            if m == "A":
+                nextMove = copy.deepcopy(self)
+                nextMove = nextMove.left()
+            if m == "W":
+                nextMove = copy.deepcopy(self)
+                nextMove = nextMove.up()
+            nextMove.parent = self
+            result.append(nextMove)
+        return result
+
+    def backup(self):
+        while self is not None:
+            self.reward += self.cal_reward()
+            self.visited += 1
+            self = self.parent
+
+    def best_neighbor(self, exploration_param = 1.4):
+        best_neighbor = None
+        best_score = -float("inf")
+        for node in self.childen():
+            exploitation_score = node.reward/node.visited
+            exploration_score = exploration_param * math.sqrt(math.log(self.visited)/node.visited)
+            total_score =  exploitation_score + exploration_score
+            if total_score > best_score:
+                best_score = total_score
+                best_neighbor = node
+        return best_neighbor
+    
+    def default_policy(self):
+        node = copy.deepcopy(self)
+        while not node.check_win() and len(node.possible_action) > 0:
+            if len(node.possible_action) > 0:
+                n = random.randint(0,len(self.possible_action)-1)
+                node = node.possible_action[n]
+        return node.cal_reward()
+
+    def select_untried_action(self):
+        while not self.check_win():
+            untried = list(set(self.possible_action) - set(self.childen))
+            if len(untried) > 0:
+                return untried[0]
+            else:
+                return None
+        return None   
+    def tree_policy(self):
+        while not self.check_win():
+            node = self.select_untried_action()
+            if node is not None:
+                self.childen.append(node)
+                return node
+            else:
+                node = self.best_neighbor()
+        return self            
+    def MCTS(self):
+        while not self.check_win():
+            node = self.select_untried_action()
+            if node is not None:
+                node.parent = self
+                node.visited = self.visited + 1
+                node.reward = node.cal_reward()
+                self.childen.append(node)
+            else:
+                return self.best_neighbor()
+        return self.best_neighbor()
+    def solve(self):
+        finish = self
+        result = []
+        while not finish.check_win():
+            finish = finish.MCTS()
+        while finish.parent is not None:
+            result.append(finish.pos)
+            finish = finish.parent
+        return result

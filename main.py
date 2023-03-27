@@ -7,6 +7,7 @@ import time
 from board_test import *
 import keyboard
 import string
+import tracemalloc
 
 # Set parameters
 WIDTH, HEIGHT = 800, 700
@@ -107,7 +108,14 @@ def main():
 
     if mode == "astar":
         solver = aStar(level_list[level - 1])
+        start_time = time.time()
+        tracemalloc.start()
         result = solver.solve()
+        runtime = round(time.time() - start_time, 3)
+        max_mem = tracemalloc.get_traced_memory()[1]
+        tracemalloc.stop()
+        print("Found a solution in", runtime, "secs")
+        print("Maximum memory allocation :", max_mem)
         draw_board(solver)
         time.sleep(3)
         while(run):
@@ -139,7 +147,54 @@ def main():
                 break
     if mode == "bfs":
         solver = BFS(level_list[level - 1])
+        start_time = time.time()
+        tracemalloc.start()
         result = solver.solve()
+        runtime = round(time.time() - start_time, 3)
+        max_mem = tracemalloc.get_traced_memory()[1]
+        tracemalloc.stop()
+        print("Found a solution in", runtime, "secs")
+        print("Maximum memory allocation :", max_mem)
+        draw_board(solver)
+        time.sleep(3)
+        while(run):
+            clock.tick(FPS)
+            for event in pygame.event.get():
+                if (event.type == pygame.QUIT):
+                    run = False
+            for move in result:
+                if move == "W":
+                    solver.up()
+                    time.sleep(1)
+                if move == "S":
+                    solver.down()
+                    time.sleep(1)
+                if move == "A":
+                    solver.left()
+                    time.sleep(1)
+                if move == "D":
+                    solver.right()
+                    time.sleep(1)
+                draw_board(solver)
+            if solver.check_win():
+                print("You win")
+                time.sleep(2)
+                break
+            else:
+                print("AI failed")
+                time.sleep(2)
+                break
+
+    if mode == "mcts":
+        solver = MCTS(level_list[level - 1])
+        start_time = time.time()
+        tracemalloc.start()
+        result = solver.solve()
+        runtime = round(time.time() - start_time, 3)
+        max_mem = tracemalloc.get_traced_memory()[1]
+        tracemalloc.stop()
+        print("Found a solution in", runtime, "secs")
+        print("Maximum memory allocation :", max_mem)
         draw_board(solver)
         time.sleep(3)
         while(run):
