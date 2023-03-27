@@ -52,9 +52,6 @@ class MCTS(Game):
             self.visited += 1
             self = self.parent
 
-    def add_child(self,child):
-        self.childen.append(child)
-
     def best_neighbor(self, exploration_param = 1.4):
         best_neighbor = None
         best_score = -float("inf")
@@ -93,18 +90,28 @@ class MCTS(Game):
                 node = self.best_neighbor()
         return self            
     def MCTS(self):
-        for i in range(5):
-            node = self.tree_policy()
-            reward = self.default_policy()
-            self.backup()
+        while not self.check_win():
+            node = self.select_untried_action()
+            if node is not None:
+                node.parent = self
+                node.visited = self.visited + 1
+                node.reward = node.cal_reward()
+                self.childen.append(node)
+            else:
+                return self.best_neighbor()
         return self.best_neighbor()
     def solve(self):
-        finish = self.MCTS()
+        finish = self
         result = []
+        while not finish.check_win():
+            finish = finish.MCTS()
         while finish.parent is not None:
             result.append(finish.pos)
             finish = finish.parent
         return result
+
+
+
 # function monte_carlo_tree_search(initial_state):
 #     root_node = Node(state=initial_state)
 #     while not stop_condition_met():
