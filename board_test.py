@@ -416,14 +416,42 @@ class Game():
 #Search using BFS 
 class BFS(Game):
     def __init__(self,level,move="") -> None:
-        self.level = level
-        self.id, self.start, self.state, self.bridge_list = level
-        self.pos = self.start
-        self.state_block = "STAND"
-        self.goal = self.find_finish_state()
+        super().__init__(level)
         self.g = 0
         self.move = move
+        self.soft = False
+        self.hard = False
 
+    #Checking if the map has bridge or not
+    def has_soft_bridge(self):
+        for i in range(400):
+            if self.state[i // 20][i % 20] == 2:
+                return (i // 20, i % 20)
+        return None
+    def has_hard_bridge(self):
+        for i in range(400):
+            if self.state[i // 20][i % 20] == 3:
+                return (i // 20, i % 20)
+        return None
+    
+    def is_standing_on_soft_bridge_button(self):
+        b = self.has_soft_bridge()
+        if b is None:
+            return False
+        if b[0] == self.pos[0] and b[1] == self.pos[1]:
+            return True
+        elif len(self.pos) == 4:
+            if b[0] == self.pos[2] and b[1] == self.pos[3]:
+                return True
+        return False
+    def is_standing_on_hard_bridge_button(self):
+        b = self.has_hard_bridge()
+        if b is None:
+            return False
+        if self.state_block == "STAND" and b[0] == self.pos[0] and b[1] == self.pos[1]:
+            return True
+        return False
+    
     #-----------------------
     #   Redefine 4 method: left,right,up,down
     #   In class game : only change pos of block
@@ -449,6 +477,7 @@ class BFS(Game):
                 else:
                     self.pos = (x1, y1 - 2)
                 self.state_block = "STAND"
+        self.step_on_special_tiles()
         return self
 
     # Method : right(), move the block to the right : -->
@@ -471,6 +500,7 @@ class BFS(Game):
                 else:
                     self.pos = (x1, y1 + 2)
                 self.state_block = "STAND"
+        self.step_on_special_tiles()
         return self
 
     # Method : down(), move the block down
@@ -493,6 +523,7 @@ class BFS(Game):
                 else:
                     self.pos = (x1 + 2, y1)
                 self.state_block = "STAND"
+        self.step_on_special_tiles()
         return self
 
     # Method : up(), move the block up
@@ -515,6 +546,7 @@ class BFS(Game):
                 else:
                     self.pos = (x1 - 2, y1)
                 self.state_block = "STAND"
+        self.step_on_special_tiles()
         return self
 
     # These 2 find method: search for block position in open_list and close_list
@@ -539,13 +571,21 @@ class BFS(Game):
         # First add start node
         open_list.append(self)
 
+        #if bridge exist, first try to touch bridge
+        soft_bridge = self.has_soft_bridge()
+        hard_bridge = self.has_hard_bridge()
+        if soft_bridge is not None:
+            self.soft = True
+        
+        if hard_bridge is not None:
+            self.hard = True
+        
         while len(open_list) != 0:
             # Take the first node in unvisited list
             # Visit it and add to visited list
             currCell = open_list[0]
             open_list.pop(0)
             close_list.append(currCell)
-
             # Check winning condition
             if currCell.check_win():
                 return currCell.move
@@ -574,6 +614,10 @@ class BFS(Game):
                     nextMove = nextMove.up()
                     nextMove.g = currCell.g + 1
                     nextMove.move = currCell.move + "W"
+                if nextMove.is_standing_on_soft_bridge_button():
+                    nextMove.soft = not nextMove.soft
+                if nextMove.is_standing_on_hard_bridge_button():
+                    nextMove.hard = not nextMove.hard
                 # For each legal move, consider its position
                 open_idx = nextMove.find_in_open(open_list)
                 close_idx = nextMove.find_in_close(close_list)
@@ -581,21 +625,32 @@ class BFS(Game):
                 if open_idx == None and close_idx == None:
                     open_list.append(nextMove)
                 # Node is already exist in unvisited list and its cost is larger -> replace node
-                elif open_idx != None and open_list[open_idx].g > nextMove.g:
-                    open_list[open_idx] = nextMove
+                elif open_idx != None:
+                    if open_list[open_idx].soft == True and nextMove.soft == False:
+                        open_list[open_idx] = nextMove
+                        continue
+                    if open_list[open_idx].hard == True and nextMove.hard == False:
+                        open_list[open_idx] = nextMove
+                        continue
+                    if open_list[open_idx].g > nextMove.g:
+                        open_list[open_idx] = nextMove
+                        continue
+                elif close_idx != None:
+                    if close_list[close_idx].soft == True and nextMove.soft == False:
+                        open_list.append(nextMove)
+                        close_list.pop(close_idx)
+                        continue
+                    if close_list[close_idx].hard == True and nextMove.hard == False:
+                        open_list.append(nextMove)
+                        close_list.pop(close_idx)
+                        continue
         return None
 
 # Search using A*
-class aStar():
+class aStar(BFS):
     def __init__(self, level, move="") -> None:
-        self.level = level
-        self.id, self.start, self.state, self.bridge_list = level
-        self.pos = self.start
-        self.state_block = "STAND"
-        self.goal = self.find_finish_state()
+        super().__init__(level,move)
         self.f = self.heuristic_func()
-        self.g = 0
-        self.move = move
 
     # Heuristic function: Chebyshev
     def heuristic_func(self):
@@ -616,6 +671,14 @@ class aStar():
         open_list = []
         close_list = []
         open_list.append(self)
+
+        #if bridge exist, first try to touch bridge
+        soft_bridge = self.has_soft_bridge()
+        hard_bridge = self.has_hard_bridge()
+        if soft_bridge is not None:
+            self.soft = True
+        if hard_bridge is not None:
+            self.hard = True
 
         while len(open_list) != 0:
             # In A*, the node in unvisited list is visited in increasing order
@@ -661,7 +724,10 @@ class aStar():
                     nextMove.g = currCell.g + 1
                     nextMove.f = nextMove.g + nextMove.heuristic_func()
                     nextMove.move = currCell.move + "W"
-                
+                if nextMove.is_standing_on_soft_bridge_button():
+                    nextMove.soft = not nextMove.soft
+                if nextMove.is_standing_on_hard_bridge_button():
+                    nextMove.hard = not nextMove.hard
                 # For each legal move, consider its position
                 open_idx = nextMove.find_in_open(open_list)
                 close_idx = nextMove.find_in_close(close_list)
@@ -669,10 +735,28 @@ class aStar():
                 if open_idx == None and close_idx == None:
                     open_list.append(nextMove)
                 # Node existed in unvisited list and its cost is larger -> replace node
-                elif open_idx != None and open_list[open_idx].f > nextMove.f:
-                    open_list[open_idx] = nextMove
+                elif open_idx != None:
+                    if open_list[open_idx].soft == True and nextMove.soft == False:
+                        open_list[open_idx] = nextMove
+                        continue
+                    if open_list[open_idx].hard == True and nextMove.hard == False:
+                        open_list[open_idx] = nextMove
+                        continue
+                    if open_list[open_idx].f > nextMove.f:
+                        open_list[open_idx] = nextMove
+                        continue
                 # Node existed in close list and its cost is larger -> add to open_list, remove from close_list
-                elif close_idx != None and close_list[close_idx].f > nextMove.f:
-                    open_list.append(nextMove)
-                    close_list.pop(close_idx)
+                elif close_idx != None:
+                    if close_list[close_idx].soft == True and nextMove.soft == False:
+                        open_list.append(nextMove)
+                        close_list.pop(close_idx)
+                        continue
+                    if close_list[close_idx].hard == True and nextMove.hard == False:
+                        open_list.append(nextMove)
+                        close_list.pop(close_idx)
+                        continue
+                    if close_list[close_idx].f > nextMove.f:
+                        open_list.append(nextMove)
+                        close_list.pop(close_idx)
+                        continue
         return None
