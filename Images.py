@@ -1,7 +1,7 @@
 import pygame
 import os
 
-tile_size = (25, 25)
+tile_size = (29, 29)
 
 VOID_TILE = pygame.image.load(os.path.join("Assets", "Images", "Void tile.png"))
 VOID_TILE = pygame.transform.scale(VOID_TILE, tile_size)
