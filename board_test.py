@@ -774,9 +774,13 @@ class MCTS(Game):
         self.parent = None
         self.visited = 1
         self.reward = 0
-        self.possible_action = self.get_neighbor()
-        #print(self.possible_action)
-
+        self.move = ""
+    #-----------------------
+    #   Redefine 4 method: left,right,up,down
+    #   In class game : only change pos of block
+    #   Here : no need checking legal, return block itself
+    #-----------------------
+    # Method : left(), move the block to the left : <--
     def left(self):
         if self.state_block == "STAND":  # The block is standing
             # Look at 2 tiles on the left of it
@@ -867,26 +871,82 @@ class MCTS(Game):
                 self.state_block = "STAND"
         self.step_on_special_tiles()
         return self
+    
+    # These 2 find method: search for block position in open_list and close_list
+    # return index if found, None otherwise
+    def find_in_open(self,open_list):
+        for index,item in enumerate(open_list):
+            if item.pos == self.pos:
+                return index
+        return None
+    def find_in_close(self,close_list):
+        for index,item in enumerate(close_list):
+            if item.pos == self.pos:
+                return index
+        return None
+    
+    # From a node, perform simulation until reach final node
+    # return the lenght of movement
+    def blind_search(self):
+        # Create 2 list for unvisited and visited node
+        open_list = []
+        close_list = []
+        # First add start node
+        open_list.append(self)
+        
+        while len(open_list) != 0:
+            # Take the first node in unvisited list
+            # Visit it and add to visited list
+            currCell = open_list[0]
+            open_list.pop(0)
+            close_list.append(currCell)
+            # Check winning condition
+            if currCell.check_win():
+                return currCell.move
+            
+            # List all legal move
+            legal_move = currCell.list_legal_moves()
+            for m in legal_move:
+                if m == "D":
+                    #have to copy currcell to nextmove, to avoid currcell change after call right() func
+                    nextMove = copy.deepcopy(currCell)
+                    nextMove = nextMove.right()
+                    nextMove.move = currCell.move + "D"
+                if m == "S":
+                    nextMove = copy.deepcopy(currCell)
+                    nextMove = nextMove.down()
+                    nextMove.move = currCell.move + "S"
+                if m == "A":
+                    nextMove = copy.deepcopy(currCell)
+                    nextMove = nextMove.left()
+                    nextMove.move = currCell.move + "A"
+                if m == "W":
+                    nextMove = copy.deepcopy(currCell)
+                    nextMove = nextMove.up()
+                    nextMove.move = currCell.move + "W"
 
-    # Base on Euclidian distance
+                # For each legal move, consider its position
+                open_idx = nextMove.find_in_open(open_list)
+                close_idx = nextMove.find_in_close(close_list)
+                # Node is not exist in both list -> add to unvisited list
+                if open_idx == None and close_idx == None:
+                    open_list.append(nextMove)
+        return None
+    
+    # From a node, perform simulation until end
+    # backpropagation the result for this node upward
     def cal_reward(self):  # ->>>>get reward
-        if self.check_win():
-            return 20
-        x_goal, y_goal = self.goal
-        x1, y1 = [self.pos[0], self.pos[1]]
-        if len(self.pos) == 2:
-            return 20 - math.sqrt((x1-x_goal)**2 + (y1-y_goal)**2)
-        if len(self.pos) == 4:
-            x2, y2 = [self.pos[2], self.pos[3]]
-            dis1 = math.sqrt((x1-x_goal)**2 + (y1-y_goal)**2)
-            dis2 = math.sqrt((x2-x_goal)**2 + (y2-y_goal)**2)
-            return 20 - 0.5*(dis1+dis2)
-
+        result = self.blind_search()
+        if result is None:
+            return -20
+        return 20 - len(result)
+    
     # Expand all legal move from a node
+    # return list of neighbor object
     def get_neighbor(self):
         result = []
         legal_move = self.list_legal_moves()
-        print(legal_move)
+
         for m in legal_move:
             if m == "D":
                 nextMove = copy.deepcopy(self)
@@ -901,15 +961,20 @@ class MCTS(Game):
                 nextMove = copy.deepcopy(self)
                 nextMove = nextMove.up()
             nextMove.parent = self
+            nextMove.childen.clear()
+            nextMove.visited = self.visited + 1
+            nextMove.reward = nextMove.cal_reward()
             result.append(nextMove)
         return result
 
+    # For backpropagation purpose
     def backup(self):
         while self is not None:
             self.reward += self.cal_reward()
             self.visited += 1
             self = self.parent
-
+    
+    # Choose which children is the best to explore
     def best_neighbor(self, exploration_param = 1.4):
         best_neighbor = None
         best_score = -float("inf")
@@ -922,30 +987,7 @@ class MCTS(Game):
                 best_neighbor = node
         return best_neighbor
     
-    def default_policy(self):
-        node = copy.deepcopy(self)
-        while not node.check_win() and len(node.possible_action) > 0:
-            if len(node.possible_action) > 0:
-                n = random.randint(0,len(self.possible_action)-1)
-                node = node.possible_action[n]
-        return node.cal_reward()
-
-    def select_untried_action(self):
-        while not self.check_win():
-            print(self.possible_action)
-            untried = list(set(self.possible_action) - set(self.childen))
-            print(untried)
-            untried = []
-            for i in self.possible_action:
-                if i not in self.childen:
-                    untried.append(i)
-            print(untried)
-            if len(untried) > 0:
-                print(untried[0])
-                return untried[0]
-            else:
-                return None
-        return None   
+    # Rule of tree traversal
     def tree_policy(self):
         while not self.check_win():
             node = self.select_untried_action()
@@ -954,29 +996,39 @@ class MCTS(Game):
                 return node
             else:
                 node = self.best_neighbor()
-        return self            
+        return self
+    # Return best action by learning            
     def MCTS(self):
         if not self.check_win():
-            node = self.select_untried_action()
-            if node is not None:
-                node.parent = self
-                node.visited = self.visited + 1
-                node.reward = node.cal_reward()
+            neighbor = self.get_neighbor()
+            for node in neighbor:
                 self.childen.append(node)
-            else:
-                return self.best_neighbor()
-        return self.best_neighbor()
+            return self.best_neighbor()
+        return self
+    
+    # Iterate back from final state, return a string of movement
     def solve(self):
         finish = self
         result = []
         while not finish.check_win():
-            #print(finish.possible_action)
             finish = finish.MCTS()
         while finish.parent is not None:
-            result.append(finish.pos)
+            result.insert(0,finish.pos)
+            print(result)
             finish = finish.parent
-        return result
-
-lvl = MCTS(level_list[0])
-result = lvl.solve()
-print(result)
+        str_movement = ""
+        print(self.pos)
+        for position in result:
+            if self.if_right() == position:
+                str_movement = str_movement + "D"
+                self.right()
+            if self.if_down() == position:
+                str_movement = str_movement + "S"
+                self.down()
+            if self.if_left() == position:
+                str_movement = str_movement + "A"
+                self.left()
+            if self.if_up() == position:
+                str_movement = str_movement + "W"
+                self.up()
+        return str_movement
