@@ -29,7 +29,7 @@ def load_level(id : int):
 # level_7 = load_level(7)
 # level_8 = load_level(8)
 
-level_idx = [1, 2, 3, 4, 5, 6]
+level_idx = [1, 2, 3, 4, 5, 6, 7]
 level_list = []
 for i in level_idx:
     level_list.append(load_level(i))
