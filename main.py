@@ -77,7 +77,10 @@ def main():
     mode = str(sys.argv[2])
     clock = pygame.time.Clock()
     run = True
-    lvl = Game(level_list[level_idx.index(level)])
+    if level != 0:
+        lvl = Game(level_list[level_idx.index(level)])
+    else:
+        lvl = Game(level_demo)
     draw_window()
     time.sleep(1)
     if mode == "manual":

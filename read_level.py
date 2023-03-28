@@ -34,6 +34,8 @@ level_list = []
 for i in level_idx:
     level_list.append(load_level(i))
 
+level_demo = load_level(0)
+
 
 # print("Level :", id)
 # print("Starting position :", start)
