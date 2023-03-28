@@ -79,6 +79,7 @@ def main():
     run = True
     lvl = Game(level_list[level_idx.index(level)])
     draw_window()
+    time.sleep(1)
     if mode == "manual":
         while(run):
             clock.tick(FPS)
@@ -204,6 +205,10 @@ def main():
         f = open("Assets/Board/Solutions/MCTS/" + str(level) + ".txt", "w")
         f.write(result)
         f.close()
+        f = open("Assets/Board/Solutions/MCTS/" + str(level) + ".txt", "r")
+        result = f.read()
+        f.close()
+        time.sleep(2)
         draw_board(solver)
         time.sleep(3)
         while(run):

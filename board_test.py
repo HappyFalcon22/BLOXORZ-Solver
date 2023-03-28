@@ -1008,16 +1008,15 @@ class MCTS(Game):
     
     # Iterate back from final state, return a string of movement
     def solve(self):
+        temp = self.start
         finish = self
         result = []
         while not finish.check_win():
             finish = finish.MCTS()
         while finish.parent is not None:
             result.insert(0,finish.pos)
-            print(result)
             finish = finish.parent
         str_movement = ""
-        print(self.pos)
         for position in result:
             if self.if_right() == position:
                 str_movement = str_movement + "D"
@@ -1031,4 +1030,5 @@ class MCTS(Game):
             if self.if_up() == position:
                 str_movement = str_movement + "W"
                 self.up()
+        self.pos = temp 
         return str_movement
