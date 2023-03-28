@@ -7,9 +7,8 @@
 | 3    | Normal tile        | 1            |
 | 4    | Bridge tile - soft | 2            |
 | 5    | Bridge tile - hard | 3            |
-| 6    | Bridge             | 4            |
+| 6    | Bridge             | Alphabet     |
 | 7    | Soft tile          | 5            |
-| 8    | Division tile      | 6            |
 | 9    | Finish tile        | 7            |
 
 Define the first line : `[level_ID] [start_X] [start_Y]`
@@ -18,4 +17,11 @@ Define the first line : `[level_ID] [start_X] [start_Y]`
 + `start_X` : the starting position in rows
 + `start_Y` : the starting position in columns
 
-Map 14 : Unsolve
+Define the second line : `[number_of_bridge] [bridge1_x] [bridge1_y] [Alphabet] ...`
+
++ `number_of_bridge` : the name says itself
++ `bridge<i>_x,y`    : define the coordinates of the bridge tiles
++ `[Alphabet]`       : define which bridge belong to which bridge tiles
+
+Define 
+

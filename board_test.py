@@ -772,9 +772,101 @@ class MCTS(Game):
         super().__init__(level)
         self.childen = []
         self.parent = None
-        self.visited = 0
+        self.visited = 1
         self.reward = 0
         self.possible_action = self.get_neighbor()
+        #print(self.possible_action)
+
+    def left(self):
+        if self.state_block == "STAND":  # The block is standing
+            # Look at 2 tiles on the left of it
+            x, y = self.pos[0], self.pos[1]
+            self.pos = (x, y - 1, x, y - 2)
+            self.state_block = "FALL"
+        elif self.state_block == "FALL":
+            # Fall, up will remain the state fall
+            x1, y1, x2, y2 = self.pos[0], self.pos[1], self.pos[2], self.pos[3]
+            if y1 == y2:
+                y1 -= 1
+                y2 -= 1
+                self.pos = (x1, y1, x2, y2)
+            else:  # Fall, up will make the block stand
+                if y1 - 1 == y2 - 2:
+                    self.pos = (x1, y1 - 1)
+                else:
+                    self.pos = (x1, y1 - 2)
+                self.state_block = "STAND"
+        self.step_on_special_tiles()
+        return self
+
+    # Method : right(), move the block to the right : -->
+    def right(self):
+        if self.state_block == "STAND":  # The block is standing
+            # Look at 2 tiles on the right of it
+            x, y = self.pos[0], self.pos[1]
+            self.pos = (x, y + 1, x, y + 2)
+            self.state_block = "FALL"
+        elif self.state_block == "FALL":
+            # Fall, up will remain the state fall
+            x1, y1, x2, y2 = self.pos[0], self.pos[1], self.pos[2], self.pos[3]
+            if y1 == y2:
+                y1 += 1
+                y2 += 1
+                self.pos = (x1, y1, x2, y2)
+            else:  # Fall, up will make the block stand
+                if y1 + 1 == y2 + 2:
+                    self.pos = (x1, y1 + 1)
+                else:
+                    self.pos = (x1, y1 + 2)
+                self.state_block = "STAND"
+        self.step_on_special_tiles()
+        return self
+
+    # Method : down(), move the block down
+    def down(self):
+        if self.state_block == "STAND":  # The block is standing
+            # Look at 2 tiles below it
+            x, y = self.pos[0], self.pos[1]
+            self.pos = (x + 1, y, x + 2, y)
+            self.state_block = "FALL"
+        elif self.state_block == "FALL":
+            # Fall, up will remain the state fall
+            x1, y1, x2, y2 = self.pos[0], self.pos[1], self.pos[2], self.pos[3]
+            if x1 == x2:
+                x1 += 1
+                x2 += 1
+                self.pos = (x1, y1, x2, y2)
+            else:  # Fall, up will make the block stand
+                if x1 + 1 == x2 + 2:
+                    self.pos = (x1 + 1, y1)
+                else:
+                    self.pos = (x1 + 2, y1)
+                self.state_block = "STAND"
+        self.step_on_special_tiles()
+        return self
+
+    # Method : up(), move the block up
+    def up(self):
+        if self.state_block == "STAND":  # The block is standing
+            # Look at 2 tiles above it
+            x, y = self.pos[0], self.pos[1]
+            self.pos = (x - 1, y, x - 2, y)
+            self.state_block = "FALL"
+        elif self.state_block == "FALL":
+            # Fall, up will remain the state fall
+            x1, y1, x2, y2 = self.pos[0], self.pos[1], self.pos[2], self.pos[3]
+            if x1 == x2:
+                x1 -= 1
+                x2 -= 1
+                self.pos = (x1, y1, x2, y2)
+            else:  # Fall, up will make the block stand
+                if x1 - 1 == x2 - 2:
+                    self.pos = (x1 - 1, y1)
+                else:
+                    self.pos = (x1 - 2, y1)
+                self.state_block = "STAND"
+        self.step_on_special_tiles()
+        return self
 
     # Base on Euclidian distance
     def cal_reward(self):  # ->>>>get reward
@@ -794,6 +886,7 @@ class MCTS(Game):
     def get_neighbor(self):
         result = []
         legal_move = self.list_legal_moves()
+        print(legal_move)
         for m in legal_move:
             if m == "D":
                 nextMove = copy.deepcopy(self)
@@ -820,7 +913,7 @@ class MCTS(Game):
     def best_neighbor(self, exploration_param = 1.4):
         best_neighbor = None
         best_score = -float("inf")
-        for node in self.childen():
+        for node in self.childen:
             exploitation_score = node.reward/node.visited
             exploration_score = exploration_param * math.sqrt(math.log(self.visited)/node.visited)
             total_score =  exploitation_score + exploration_score
@@ -839,8 +932,16 @@ class MCTS(Game):
 
     def select_untried_action(self):
         while not self.check_win():
+            print(self.possible_action)
             untried = list(set(self.possible_action) - set(self.childen))
+            print(untried)
+            untried = []
+            for i in self.possible_action:
+                if i not in self.childen:
+                    untried.append(i)
+            print(untried)
             if len(untried) > 0:
+                print(untried[0])
                 return untried[0]
             else:
                 return None
@@ -855,7 +956,7 @@ class MCTS(Game):
                 node = self.best_neighbor()
         return self            
     def MCTS(self):
-        while not self.check_win():
+        if not self.check_win():
             node = self.select_untried_action()
             if node is not None:
                 node.parent = self
@@ -869,8 +970,13 @@ class MCTS(Game):
         finish = self
         result = []
         while not finish.check_win():
+            #print(finish.possible_action)
             finish = finish.MCTS()
         while finish.parent is not None:
             result.append(finish.pos)
             finish = finish.parent
         return result
+
+lvl = MCTS(level_list[0])
+result = lvl.solve()
+print(result)
